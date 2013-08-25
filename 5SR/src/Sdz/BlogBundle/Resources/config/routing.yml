@@ -27,3 +27,7 @@ sdzblog_supprimer:
     defaults:  { _controller: SdzBlogBundle:Blog:supprimer }
     requirements:
         id:  \d+
+
+sdzblog_mail:
+    path:      /mail/{name}
+    defaults:  { _controller: SdzBlogBundle:Blog:mail }

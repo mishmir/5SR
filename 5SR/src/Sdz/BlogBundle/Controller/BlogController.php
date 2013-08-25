@@ -19,20 +19,48 @@ class BlogController extends Controller
       throw $this->createNotFoundException('Page inexistante (page = '.$page.')');
     }
  
-    // Ici, on récupérera la liste des articles, puis on la passera au template
- 
-    // Mais pour l'instant, on ne fait qu'appeler le template
-    return $this->render('SdzBlogBundle:Blog:index.html.twig');
-  }
-   
+    // Les articles :
+  $articles = array(
+    array(
+      'titre'   => 'Mon weekend a Phi Phi Island !',
+      'id'      => 1,
+      'auteur'  => 'winzou',
+      'contenu' => 'Ce weekend était trop bien. Blabla…',
+      'date'    => new \Datetime()),
+    array(
+      'titre'   => 'Repetition du National Day de Singapour',
+      'id'      => 2,
+      'auteur' => 'winzou',
+      'contenu' => 'Bientôt prêt pour le jour J. Blabla…',
+      'date'    => new \Datetime()),
+    array(
+      'titre'   => 'Chiffre d\'affaire en hausse',
+      'id'      => 3,
+      'auteur' => 'Méteo21',
+      'contenu' => '+500% sur 1 an, fabuleux. Blabla…',
+      'date'    => new \Datetime())
+  );
+     
+  // Puis modifiez la ligne du render comme ceci, pour prendre en compte nos articles :
+  return $this->render('SdzBlogBundle:Blog:index.html.twig', array(
+    'articles' => $articles
+  ));
+}
    
   public function voirAction($id)
   {
-    // Ici, on récupérera l'article correspondant à l'id $id
+    $article = array(
+    'id'      => 1,
+    'titre'   => 'Mon weekend a Phi Phi Island !',
+    'auteur'  => 'winzou',
+    'contenu' => 'Ce weekend était trop bien. Blabla…',
+    'date'    => new \Datetime()
+  );
      
-    return $this->render('SdzBlogBundle:Blog:voir.html.twig', array(
-      'id' => $id
-    ));
+  // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
+  return $this->render('SdzBlogBundle:Blog:voir.html.twig', array(
+    'article' => $article
+  ));
   }
    
   public function ajouterAction()
@@ -59,7 +87,18 @@ class BlogController extends Controller
  
     // Ici, on s'occupera de la création et de la gestion du formulaire
  
-    return $this->render('SdzBlogBundle:Blog:modifier.html.twig');
+    $article = array(
+      'id'      => 1,
+      'titre'   => 'Mon weekend a Phi Phi Island !',
+      'auteur'  => 'winzou',
+      'contenu' => 'Ce weekend était trop bien. Blabla…',
+      'date'    => new \Datetime()
+    );
+         
+    // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
+    return $this->render('SdzBlogBundle:Blog:modifier.html.twig', array(
+      'article' => $article
+    ));
   }
  
   public function supprimerAction($id)
@@ -69,5 +108,38 @@ class BlogController extends Controller
     // Ici, on gérera la suppression de l'article en question
  
     return $this->render('SdzBlogBundle:Blog:supprimer.html.twig');
+  }
+  
+  public function menuAction($nombre) // Ici, nouvel argument $nombre, on l'a transmis via le render() depuis la vue
+  {
+    // On fixe en dur une liste ici, bien entendu par la suite on la récupérera depuis la BDD !
+    // On pourra récupérer $nombre articles depuis la BDD,
+    // avec $nombre un paramètre qu'on peut changer lorsqu'on appelle cette action
+    $liste = array(
+      array('id' => 2, 'titre' => 'Mon dernier weekend !'),
+      array('id' => 5, 'titre' => 'Sortie de Symfony2.1'),
+      array('id' => 9, 'titre' => 'Petit test')
+    );
+     
+    return $this->render('SdzBlogBundle:Blog:menu.html.twig', array(
+      'liste_articles' => $liste // C'est ici tout l'intérêt : le contrôleur passe les variables nécessaires au template !
+    ));
+  }
+  
+  public function mailAction($name)
+  {
+    // Ici, on renvoie un mail à samuel.benveniste@gmail.com avec pour corps le contenu de tag
+ 
+    $message = \Swift_Message::newInstance()
+        ->setSubject('Hello Email')
+        ->setFrom('5.relations.sociales@gmail.com')
+        ->setTo('samuel.benveniste@gmail.com')
+        ->setBody($this->renderView('SdzBlogBundle:Blog:email.txt.twig', array('name' => $name)))
+    ;
+    $this->get('mailer')->send($message);
+	
+	$this->get('session')->getFlashBag()->add('notice', $this->renderView('SdzBlogBundle:Blog:emailEnvoye.html.twig', array('name' => $name)));
+
+    return $this->redirect($this->generateUrl('sdzblog_accueil'));
   }
 }
